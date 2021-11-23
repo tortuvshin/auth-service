@@ -14,11 +14,9 @@ import systems.chinggis.authservice.services.UserDetailData;
 public class JwtUtil {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
-    @Value("${bezkoder.app.jwtSecret}")
-    private static String jwtSecret;
+    private static String jwtSecret = "secret";
 
-    @Value("${bezkoder.app.jwtExpirationMs}")
-    private static int jwtExpirationMs;
+    private static int jwtExpirationMs = 86400000;
 
     public static String generateJwtToken(Authentication authentication) {
 
