@@ -41,23 +41,27 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = JwtUtil.generateJwtToken(authentication);
 
-        String jwt = JwtUtil.generateJwtToken(authentication);
+            UserDetailData userDetails = (UserDetailData) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+            JwtResponse response = new JwtResponse();
+            response.setToken(jwt);
+            response.setUsername(userDetails.getUsername());
+            response.setId(userDetails.getId());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e);
+        }
 
-        UserDetailData userDetails = (UserDetailData) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
-        JwtResponse response = new JwtResponse();
-        response.setToken(jwt);
-        response.setUsername(userDetails.getUsername());
-        response.setId(userDetails.getId());
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/signup")
